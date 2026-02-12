@@ -1,0 +1,50 @@
+
+{
+  "name": "Neon Dash Ultimate",
+  "short_name": "Neon Dash",
+  "id": "com.bon.neondash.ultimate",
+  "description": "Intense neon shooter with 1000 levels. Survive the grid and restore the system.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#06b6d4",
+  "categories": ["games", "arcade", "action"],
+  "shortcuts": [
+    {
+      "name": "Start Playing",
+      "url": "./index.html",
+      "description": "Jump straight into the action"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://picsum.photos/192/192?random=1",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://picsum.photos/512/512?random=1",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://picsum.photos/1080/1920?random=1",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Action Gameplay"
+    },
+    {
+      "src": "https://picsum.photos/1920/1080?random=1",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Epic Boss Fights"
+    }
+  ]
+}
