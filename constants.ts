@@ -1,0 +1,68 @@
+
+export const TRANSLATIONS: Record<string, Record<string, string>> = {
+    pt_BR: {
+        createdBy: 'CRIADO POR: BON..', play: 'JOGAR', bossMode: 'MODO BOSS', skins: 'SKINS / NÚCLEO',
+        settings: 'CONFIGURAÇÕES', record: 'Recorde', maxLevel: 'Fase Max', garage: 'GARAGEM NEON',
+        close: 'FECHAR', missions: 'MISSÕES', bossTraining: 'TREINO DE CHEFES', back: 'VOLTAR',
+        gameOver: 'DESISTI!', systemCorrupted: 'VOCE E FRACO!', retry: 'TENTAR NOVAMENTE',
+        mainMenu: 'Menu Principal', victory: 'CONCLUÍDO', sectorRestored: 'Setor Restaurado',
+        nextMission: 'PRÓXIMA MISSAO', levelSelector: 'SELETOR DE FASES', bossDetected: 'O CHEFE CHEGOU!',
+        doubleTap: 'TOQUE DUPLO PARA ATIRAR!', syncGoogle: 'SINCRONIZAR GOOGLE PLAY', synced: 'CONECTADO',
+        language: 'IDIOMA', phase: 'FASE', points: 'PONTOS', resetConfirm: 'Deseja resetar todo o progresso?',
+        syncConfirm: 'Sincronizar progresso com a nuvem do Google Play?', tutorialTitle: 'COMO JOGAR',
+        tutorialBody: 'Desvie dos obstáculos vermelhos. Colete escudos azuis e pontos amarelos. Ao enfrentar o Boss, toque duas vezes (ou Espaço) para atirar. Sobreviva para restaurar o sistema!',
+        continue: 'CONTINUAR', fullScreen: 'TELA CHEIA', privacyPolicy: 'POLÍTICA DE PRIVACIDADE', 
+        developedBy: 'DEVELOPED BY: BON..',
+        policyContent: 'Este jogo respeita sua privacidade. Não coletamos, armazenamos ou compartilhamos dados pessoais. Todo o progresso do usuário é armazenado localmente no seu dispositivo.',
+        bossDyingPhrases: 'VOCÊ ESTAVA...|SE SEGURANDO...|NÃO É MESMO?',
+        bossFakeDeathReturn: 'SISTEMA REINICIADO... PROTOCOLO ATIVO!',
+        levelTest: 'TESTE DE NÍVEIS (DEV)', debugInfo: 'TODOS OS NÍVEIS DESBLOQUEADOS',
+        enterPassword: 'INSIRA A CHAVE DE ACESSO', unlock: 'DESBLOQUEAR',
+        customMusic: 'MÚSICA PERSONALIZADA', selectMusic: 'SELECIONAR MP3', clearMusic: 'REMOVER MÚSICA',
+        musicPlaying: 'REPRODUZINDO'
+    },
+    en_US: {
+        createdBy: 'CREATED BY: BON..', play: 'PLAY', bossMode: 'BOSS MODE', skins: 'SKINS / CORE',
+        settings: 'SETTINGS', record: 'Best', maxLevel: 'Max Level', garage: 'NEON GARAGE',
+        close: 'CLOSE', missions: 'MISSIONS', bossTraining: 'BOSS TRAINING', back: 'BACK',
+        gameOver: 'CRITICAL FAILURE', systemCorrupted: 'System Corrupted', retry: 'TRY AGAIN',
+        mainMenu: 'Main Menu', victory: 'COMPLETED', sectorRestored: 'Sector Restored',
+        nextMission: 'NEXT MISSION', levelSelector: 'LEVEL SELECT', bossDetected: 'BOSS DETECTED',
+        doubleTap: 'DOUBLE TAP TO SHOOT!', syncGoogle: 'SYNC GOOGLE PLAY', synced: 'CONNECTED',
+        language: 'LANGUAGE', phase: 'LEVEL', points: 'POINTS', resetConfirm: 'Do you want to reset all progress?',
+        syncConfirm: 'Sync progress with Google Play Cloud?', tutorialTitle: 'HOW TO PLAY',
+        tutorialBody: 'Dodge the red obstacles. Collect blue shields and yellow points. When facing the Boss, double tap (or Space) to shoot. Survive to restore the system!',
+        continue: 'CONTINUE', fullScreen: 'FULL SCREEN', privacyPolicy: 'PRIVACY POLICY', 
+        developedBy: 'DEVELOPED BY: BON..',
+        policyContent: 'This game respects your privacy. We do not collect, store, or share personal data. All user progress is stored locally on your device.',
+        bossDyingPhrases: 'YOU WERE...|HOLDING BACK...|WEREN\'T YOU?',
+        bossFakeDeathReturn: 'SYSTEM REBOOTED... PROTOCOL ACTIVE!',
+        levelTest: 'LEVEL TEST (DEV)', debugInfo: 'ALL LEVELS UNLOCKED',
+        enterPassword: 'ENTER ACCESS KEY', unlock: 'UNLOCK',
+        customMusic: 'CUSTOM MUSIC', selectMusic: 'SELECT MP3', clearMusic: 'REMOVE MUSIC',
+        musicPlaying: 'PLAYING'
+    },
+    es_ES: {
+        createdBy: 'CREADO POR: BON..', play: 'JOGAR', bossMode: 'MODO BOSS', skins: 'SKINS / NÚCLEO',
+        settings: 'AJUSTES', record: 'Récord', maxLevel: 'Nivel Máx', garage: 'GARAJE NEÓN',
+        close: 'CERRAR', missions: 'MISIONES', bossTraining: 'ENTRENO JEFES', back: 'VOLVER',
+        gameOver: 'FALLO CRÍTICO', systemCorrupted: 'Sistema Corrupto', retry: 'REINTENTAR',
+        mainMenu: 'Menú Principal', victory: 'COMPLETADO', sectorRestored: 'Sector Restaurado',
+        nextMission: 'PRÓXIMA MISIÓN', levelSelector: 'SELECTOR DE NIVEL', bossDetected: 'BOSS DETECTADO',
+        doubleTap: '¡DOBLE TOQUE PARA DISPARAR!', syncGoogle: 'SINC. GOOGLE PLAY', synced: 'CONECTADO',
+        language: 'IDIOMA', phase: 'NIVEL', points: 'PONTOS', resetConfirm: '¿Quieres reiniciar todo el progreso?',
+        syncConfirm: '¿Sincronizar progreso con la nube de Google Play?', tutorialTitle: 'CÓMO JUGAR',
+        tutorialBody: 'Esquiva los obstáculos rojos. Recoge escudos azules e pontos amarellos. Al enfrentar al Jefe, toca dos veces (o Espaço) para disparar. ¡Sobrevive para restaurar o sistema!',
+        continue: 'CONTINUAR', fullScreen: 'PANTALLA COMPLETA', privacyPolicy: 'POLÍTICA DE PRIVACIDAD', 
+        developedBy: 'DESARROLLADO POR: BON..',
+        policyContent: 'Este jogo respeita sua privacidade. Não coletamos, armazenamos ou compartilhamos dados pessoais. Todo o progresso do usuário é armazenado localmente no seu dispositivo.',
+        bossDyingPhrases: 'TE ESTABAS...|CONTENIENDO...|¿VERDAD?',
+        bossFakeDeathReturn: 'SISTEMA REINICIADO... ¡PROTOCOLO ACTIVO!',
+        levelTest: 'PRUEBA DE NIVELES (DEV)', debugInfo: 'TODOS OS NIVELES DESBLOQUEADOS',
+        enterPassword: 'INGRESE LA CLAVE', unlock: 'DESBLOQUEAR',
+        customMusic: 'MÚSICA PERSONALIZADA', selectMusic: 'SELECCIONAR MP3', clearMusic: 'QUITAR MÚSICA',
+        musicPlaying: 'REPRODUCIENDO'
+    }
+};
+
+export const getTranslation = (key: string, lang: string) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS.en_US[key];
