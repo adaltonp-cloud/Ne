@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Neon Dash ULTIMATE - 1000 LEVELS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- React e Babel para rodar tudo em um arquivo só -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { display: block; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.4); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+        
+        .animate-in { animation-duration: 0.4s; animation-fill-mode: both; }
+        .fade-in { animation-name: fadeIn; }
+        .zoom-in { animation-name: zoomIn; }
+        .slide-in-from-bottom { animation-name: slideInBottom; }
+        .slide-in-from-right { animation-name: slideInRight; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideInBottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        #root { width: 100vw; height: 100vh; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // --- TYPES & CONSTANTS ---
+        const GameState = {
+            INTRO: 0, MENU: 1, LEVEL_SELECT: 2, BOSS_TRAINING_SELECT: 3,
+            SKINS: 4, SETTINGS: 5, TUTORIAL: 6, COUNTDOWN: 7,
+            PLAYING: 8, BOSS_WARNING: 9, VICTORY: 10, GAME_OVER: 11
+        };
+
+        const translations = {
+            pt_BR: {
+                createdBy: 'CRIADO POR: BON..', play: 'JOGAR', bossMode: 'MODO BOSS', skins: 'SKINS / NÚCLEO',
+                settings: 'CONFIGURAÇÕES', record: 'Recorde', maxLevel: 'Fase Max', garage: 'GARAGEM NEON',
+                close: 'FECHAR', missions: 'MISSÕES', bossTraining: 'TREINO DE CHEFES', back: 'VOLTAR',
+                gameOver: 'FALHA CRÍTICA', systemCorrupted: 'Sistema Corrompido', retry: 'TENTAR NOVAMENTE',
+                mainMenu: 'Menu Principal', victory: 'CONCLUÍDO', sectorRestored: 'Setor Restaurado',
+                nextMission: 'PRÓXIMA MISSÃO', levelSelector: 'SELETOR DE FASES', bossDetected: 'BOSS DETECTADO',
+                doubleTap: 'TOQUE DUPLO PARA ATIRAR!', syncGoogle: 'SINCRONIZAR GOOGLE PLAY', synced: 'CONECTADO',
+                language: 'IDIOMA', phase: 'FASE', points: 'PONTOS', resetConfirm: 'Deseja resetar todo o progresso?',
+                syncConfirm: 'Sincronizar progresso com a nuvem do Google Play?', tutorialTitle: 'COMO JOGAR',
+                tutorialBody: 'Desvie dos obstáculos vermelhos. Colete escudos azuis e pontos amarelos. Ao enfrentar o Boss, toque duas vezes (ou Espaço) para atirar. Sobreviva para restaurar o sistema!',
+                continue: 'CONTINUAR', fullScreen: 'TELA CHEIA', privacyPolicy: 'POLÍTICA DE PRIVACIDADE', developedBy: 'DESENVOLVIDO POR BON..'
+            },
+            en_US: {
+                createdBy: 'CREATED BY: BON..', play: 'PLAY', bossMode: 'BOSS MODE', skins: 'SKINS / CORE',
+                settings: 'SETTINGS', record: 'Best', maxLevel: 'Max Level', garage: 'NEON GARAGE',
+                close: 'CLOSE', missions: 'MISSIONS', bossTraining: 'BOSS TRAINING', back: 'BACK',
+                gameOver: 'CRITICAL FAILURE', systemCorrupted: 'System Corrupted', retry: 'TRY AGAIN',
+                mainMenu: 'Main Menu', victory: 'COMPLETED', sectorRestored: 'Sector Restored',
+                nextMission: 'NEXT MISSION', levelSelector: 'LEVEL SELECT', bossDetected: 'BOSS DETECTADO',
+                doubleTap: 'DOUBLE TAP TO SHOOT!', syncGoogle: 'SYNC GOOGLE PLAY', synced: 'CONNECTED',
+                language: 'LANGUAGE', phase: 'LEVEL', points: 'POINTS', resetConfirm: 'Do you want to reset all progress?',
+                syncConfirm: 'Sync progress with Google Play Cloud?', tutorialTitle: 'HOW TO PLAY',
+                tutorialBody: 'Dodge the red obstacles. Collect blue shields and yellow points. When facing the Boss, double tap (or Space) to shoot. Survive to restore the system!',
+                continue: 'CONTINUE', fullScreen: 'FULL SCREEN', privacyPolicy: 'PRIVACY POLICY', developedBy: 'DEVELOPED BY BON..'
+            },
+            es_ES: {
+                createdBy: 'CREADO POR: BON..', play: 'JOGAR', bossMode: 'MODO BOSS', skins: 'SKINS / NÚCLEO',
+                settings: 'AJUSTES', record: 'Récord', maxLevel: 'Nivel Máx', garage: 'GARAJE NEÓN',
+                close: 'CERRAR', missions: 'MISIONES', bossTraining: 'ENTRENO JEFES', back: 'VOLVER',
+                gameOver: 'FALLO CRÍTICO', systemCorrupted: 'Sistema Corrupto', retry: 'REINTENTAR',
+                mainMenu: 'Menú Principal', victory: 'COMPLETADO', sectorRestored: 'Sector Restaurado',
+                nextMission: 'PRÓXIMA MISIÓN', levelSelector: 'SELECTOR DE NIVEL', bossDetected: 'BOSS DETECTADO',
+                doubleTap: '¡DOBLE TOQUE PARA DISPARAR!', syncGoogle: 'SINC. GOOGLE PLAY', synced: 'CONECTADO',
+                language: 'IDIOMA', phase: 'NIVEL', points: 'PONTOS', resetConfirm: '¿Quieres reiniciar todo el progreso?',
+                syncConfirm: '¿Sincronizar progreso con la nube de Google Play?', tutorialTitle: 'CÓMO JUGAR',
+                tutorialBody: 'Esquiva los obstáculos rojos. Recoge escudos azules y puntos amarillos. Al enfrentar al Jefe, toca dos veces (o Espaço) para disparar. ¡Sobrevive para restaurar el sistema!',
+                continue: 'CONTINUAR', fullScreen: 'PANTALLA COMPLETA', privacyPolicy: 'POLÍTICA DE PRIVACIDADE', developedBy: 'DESARROLLADO POR BON..'
+            }
+        };
+
+        const t = (key, lang) => translations[lang][key] || translations.en_US[key];
+
+        // --- SERVICES ---
+        const SAVE_KEY = 'neon_dash_ultimate_standalone_v1';
+        const SaveService = {
+            save: (data) => {
+                const current = SaveService.load();
+                localStorage.setItem(SAVE_KEY, JSON.stringify({ ...current, ...data }));
+            },
+            load: () => {
+                const data = localStorage.getItem(SAVE_KEY);
+                const defaultData = {
+                    maxLevel: 1, highScore: 0, theme: 'nebulosa', language: 'pt_BR',
+                    tutorialSeen: false, maxBossUnlocked: 0
+                };
+                if (!data) return defaultData;
+                try { return { ...defaultData, ...JSON.parse(data) }; } catch { return defaultData; }
+            }
+        };
+
+        class AudioService {
+            constructor() { this.ctx = null; }
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            createOscillator(freq, type, duration, volume = 0.1) {
+                this.init(); if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + duration);
+            }
+            playStart() { this.createOscillator(440, 'square', 0.5, 0.1); setTimeout(() => this.createOscillator(880, 'square', 0.5, 0.1), 100); }
+            playCollect() { this.createOscillator(1200, 'sine', 0.1, 0.05); setTimeout(() => this.createOscillator(1600, 'sine', 0.1, 0.05), 50); }
+            playShieldLost() { this.createOscillator(200, 'sawtooth', 0.4, 0.15); }
+            playShoot() { this.createOscillator(800, 'triangle', 0.05, 0.05); }
+            playBossHit() { this.createOscillator(150, 'square', 0.1, 0.1); }
+            playExplosion() {
+                this.init(); if (!this.ctx) return;
+                const duration = 0.8; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + duration);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration);
+            }
+            playBossExplosion() {
+                this.init(); if (!this.ctx) return;
+                const duration = 2.0; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(60, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(5, this.ctx.currentTime + duration);
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration);
+                setTimeout(() => { if (this.ctx) this.createOscillator(40, 'sawtooth', 0.5, 0.2); }, 100);
+            }
+            playCountdown(count) { this.createOscillator(count === 0 ? 800 : 400, 'sine', 0.1, 0.1); }
+        }
+        const audio = new AudioService();
+
+        // --- COMPONENTS ---
+
+        const GameCanvas = ({ gameState, currentLevel, theme, language, trainingMode, onGameOver, onScoreUpdate, onLevelComplete, onBossWarning, onBossSpawned, onBossEncountered }) => {
+            const canvasRef = useRef(null);
+            const dimensionsRef = useRef({ width: 400, height: 600 });
+            const stateRef = useRef({
+                levelScore: 0, speed: 5, shield: false, invincible: false,
+                weaponType: 'standard', weaponTimer: 0, screenShake: 0, flashEffect: 0,
+                keys: {}, player: { x: 200, y: 500, size: 28, color: "#00d4ff", speed: 8 },
+                enemies: [], bullets: [], particles: [], powerups: [], trails: [],
+                bosses: [], bossSpawnedInLevel: false, lastFire: 0, lastTap: 0, bgOffset: 0,
+                bgStars: [], blockRainTimer: 0, isBlockRainActive: false
+            });
+
+            const getThemeColors = () => {
+                switch (theme) {
+                    case 'supernova': return { primary: '#f97316', secondary: '#ef4444', bgHue: 15 };
+                    case 'abismo': return { primary: '#22c55e', secondary: '#0ea5e9', bgHue: 140 };
+                    case 'vortex': return { primary: '#ec4899', secondary: '#ffffff', bgHue: 320 };
+                    case 'estelar': return { primary: '#eab308', secondary: '#ffffff', bgHue: 45 };
+                    default: return { primary: '#06b6d4', secondary: '#a855f7', bgHue: 190 };
+                }
+            };
+
+            const initStars = (w, h) => {
+                stateRef.current.bgStars = Array.from({ length: 40 }, () => ({
+                    x: Math.random() * w, y: Math.random() * h,
+                    size: Math.random() * 2 + 1, speed: Math.random() * 2 + 0.5
+                }));
+            };
+
+            const triggerBossSpawn = useCallback(() => {
+                const s = stateRef.current;
+                const { width } = dimensionsRef.current;
+                const colors = getThemeColors();
+                s.bossSpawnedInLevel = true;
+                s.enemies = []; s.powerups = [];
+                onBossWarning(); onBossEncountered(currentLevel);
+                
+                const baseHealth = 30 + (currentLevel * 10);
+                const bonusHealth = Math.floor(Math.pow(currentLevel, 1.25));
+                const finalHealth = Math.min(25000, baseHealth + bonusHealth);
+                const vx = 4 + Math.min(12, currentLevel * 0.04);
+                const attackInterval = Math.max(5, 45 - Math.floor(currentLevel / 12));
+
+                setTimeout(() => {
+                    const newBosses = [];
+                    if (currentLevel >= 100) {
+                        const totalWidth = 110 * 2 + 40; const startX = (width - totalWidth) / 2;
+                        newBosses.push(createBossObj(startX, -120, finalHealth, vx, attackInterval, colors.secondary));
+                        newBosses.push(createBossObj(startX + 110 + 40, -120, finalHealth, -vx, attackInterval, colors.secondary));
+                    } else {
+                        newBosses.push(createBossObj(width / 2 - 55, -120, finalHealth, vx, attackInterval, colors.secondary));
+                    }
+                    s.bosses = newBosses; onBossSpawned();
+                }, 3000);
+            }, [currentLevel, onBossWarning, onBossEncountered, onBossSpawned, theme]);
+
+            const createBossObj = (x, y, health, vx, interval, color) => ({
+                x, y, size: 110, health, maxHealth: health, vx, vy: 1.5, patternTimer: 0,
+                attackInterval: interval, hit: false, color, isDying: false, deathTimer: 0, lastRainHp: health
+            });
+
+            const resetForLevel = useCallback(() => {
+                const s = stateRef.current; const { width, height } = dimensionsRef.current; const colors = getThemeColors();
+                s.speed = 5.5 + Math.min(14, currentLevel * 0.06); s.levelScore = trainingMode ? 9999 : 0;
+                s.bossSpawnedInLevel = false; s.bosses = []; s.enemies = []; s.bullets = []; s.powerups = [];
+                s.shield = false; s.invincible = false; s.weaponType = 'standard'; s.weaponTimer = 0;
+                s.player.color = colors.primary; s.player.x = width / 2 - s.player.size / 2; s.player.y = height - 100;
+                s.isBlockRainActive = false; s.blockRainTimer = 0;
+                if (trainingMode) triggerBossSpawn();
+            }, [currentLevel, theme, trainingMode, triggerBossSpawn]);
+
+            useEffect(() => { if (gameState === GameState.COUNTDOWN) resetForLevel(); }, [gameState, resetForLevel]);
+
+            const fireBullet = () => {
+                const s = stateRef.current; const now = Date.now();
+                const fireRate = s.weaponType === 'rapid' ? 70 : 170;
+                if (now - s.lastFire > fireRate) {
+                    const centerY = s.player.y;
+                    if (s.weaponType === 'dual') {
+                        s.bullets.push({ x: s.player.x - 5, y: centerY, size: 8, color: '#fff', speed: 20 });
+                        s.bullets.push({ x: s.player.x + s.player.size + 5, y: centerY, size: 8, color: '#fff', speed: 20 });
+                    } else if (s.weaponType === 'big') {
+                        s.bullets.push({ x: s.player.x + s.player.size / 2 - 15, y: centerY - 10, size: 30, color: '#ffaa00', speed: 12, type: 'big' });
+                    } else if (s.weaponType === 'split') {
+                        s.bullets.push({ x: s.player.x + s.player.size / 2 - 5, y: centerY, size: 10, color: '#00ffaa', speed: 18, type: 'split' });
+                    } else {
+                        s.bullets.push({ x: s.player.x + s.player.size / 2 - 4, y: s.player.y, size: 8, color: '#fff', speed: 20 });
+                    }
+                    s.lastFire = now; audio.playShoot();
+                }
+            };
+
+            const handleTouchStart = (e) => {
+                const s = stateRef.current; if (gameState !== GameState.PLAYING && gameState !== GameState.BOSS_WARNING) return;
+                const now = Date.now(); if (s.weaponType === 'rapid' || (now - s.lastTap < 280 && s.bosses.length > 0)) fireBullet();
+                s.lastTap = now;
+            };
+
+            const handleTouchMove = (e) => {
+                const allowed = [GameState.PLAYING, GameState.COUNTDOWN, GameState.BOSS_WARNING];
+                if (!allowed.includes(gameState)) return;
+                if (e.cancelable) e.preventDefault();
+                const rect = canvasRef.current.getBoundingClientRect(); const s = stateRef.current; const { width, height } = dimensionsRef.current;
+                const touch = e.touches[0];
+                const targetX = ((touch.clientX - rect.left) / rect.width) * width - s.player.size / 2;
+                const targetY = ((touch.clientY - rect.top) / rect.height) * height - s.player.size / 2;
+                s.player.x = Math.max(0, Math.min(width - s.player.size, targetX));
+                s.player.y = Math.max(0, Math.min(height - s.player.size, targetY));
+                if (s.weaponType === 'rapid') fireBullet();
+            };
+
+            useEffect(() => {
+                const onKeyDown = (e) => stateRef.current.keys[e.key] = true;
+                const onKeyUp = (e) => stateRef.current.keys[e.key] = false;
+                window.addEventListener("keydown", onKeyDown); window.addEventListener("keyup", onKeyUp);
+                const canvas = canvasRef.current;
+                if (canvas) {
+                    canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+                    canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
+                }
+                return () => {
+                    window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp);
+                    if (canvas) { canvas.removeEventListener("touchstart", handleTouchStart); canvas.removeEventListener("touchmove", handleTouchMove); }
+                };
+            }, [gameState]);
+
+            const update = () => {
+                const s = stateRef.current; const { width, height } = dimensionsRef.current; const colors = getThemeColors();
+                s.bgOffset = (s.bgOffset + 4.5) % 50;
+                s.bgStars.forEach(star => star.y = (star.y + star.speed * 1.5) % height);
+                if (![GameState.PLAYING, GameState.COUNTDOWN, GameState.BOSS_WARNING].includes(gameState)) return;
+
+                if (gameState === GameState.BOSS_WARNING) { s.enemies = []; s.powerups = []; }
+                if (s.weaponTimer > 0) { s.weaponTimer--; if (s.weaponTimer <= 0) s.weaponType = 'standard'; }
+                if ((s.keys["ArrowLeft"] || s.keys["a"]) && s.player.x > 0) s.player.x -= s.player.speed;
+                if ((s.keys["ArrowRight"] || s.keys["d"]) && s.player.x < width - s.player.size) s.player.x += s.player.speed;
+                if ((s.keys["ArrowUp"] || s.keys["w"]) && s.player.y > 0) s.player.y -= s.player.speed;
+                if ((s.keys["ArrowDown"] || s.keys["s"]) && s.player.y < height - s.player.size) s.player.y += s.player.speed;
+                if (s.keys[" "] || s.weaponType === 'rapid') fireBullet();
+
+                if (gameState === GameState.PLAYING) {
+                    const pointsToBoss = Math.min(400, 60 + (currentLevel * 4));
+                    if (!trainingMode && s.levelScore >= pointsToBoss && !s.bossSpawnedInLevel) triggerBossSpawn();
+                    
+                    if (s.blockRainTimer > 0) {
+                        s.blockRainTimer--;
+                        if (Math.random() < 0.25) s.enemies.push({ x: Math.random() * (width - 6), y: -50, w: 4, h: 50, speed: 16 + Math.random() * 6, color: '#fff', isStick: true });
+                        if (s.blockRainTimer <= 0) { s.isBlockRainActive = false; s.enemies = s.enemies.filter(e => !e.isStick); s.bosses.forEach(b => b.lastRainHp = b.health); }
+                    }
+
+                    for (let i = s.bosses.length - 1; i >= 0; i--) {
+                        const b = s.bosses[i];
+                        if (b.isDying) {
+                            b.deathTimer--; if (b.deathTimer <= 0) { s.bosses.splice(i, 1); audio.playBossExplosion(); if (s.bosses.length === 0) onLevelComplete(currentLevel); }
+                            continue;
+                        }
+                        if (currentLevel >= 10 && !s.isBlockRainActive) {
+                            const hpPerTrigger = b.maxHealth * 0.20;
+                            if (b.health <= b.lastRainHp - hpPerTrigger) { b.lastRainHp = b.health; s.isBlockRainActive = true; s.blockRainTimer = 420; s.enemies = []; s.powerups = []; }
+                        }
+                        if (b.y < 80) b.y += b.vy;
+                        else if (!s.isBlockRainActive) {
+                            b.x += b.vx; if (b.x < 0 || b.x + b.size > width) b.vx *= -1;
+                            b.patternTimer++;
+                            if (b.patternTimer % b.attackInterval === 0) {
+                                const isPhase2 = b.health < b.maxHealth * 0.5; const isAngry = b.health < b.maxHealth * 0.2;
+                                let projectileCount = isPhase2 ? 3 : 1;
+                                if (isAngry) projectileCount = 4;
+                                if (currentLevel >= 100 && isPhase2) projectileCount = 5;
+                                if (currentLevel >= 500 && isAngry) projectileCount = 8;
+                                for (let k = 0; k < projectileCount; k++) {
+                                    const spread = (k - (projectileCount - 1) / 2) * 2.5; const pSpeed = 10 + Math.min(12, currentLevel * 0.06);
+                                    s.enemies.push({ x: b.x + b.size / 2 + spread * 10, y: b.y + b.size, size: 22, speed: pSpeed, vx: spread, color: b.color, bossProjectile: true });
+                                }
+                            }
+                        }
+                        if (!s.invincible && s.player.x < b.x + b.size && s.player.x + s.player.size > b.x && s.player.y < b.y + b.size && s.player.y + s.player.size > b.y) {
+                            if (s.weaponType !== 'standard') { s.weaponType = 'standard'; s.weaponTimer = 0; s.invincible = true; s.flashEffect = 0.5; audio.playShieldLost(); setTimeout(() => s.invincible = false, 1000); }
+                            else if (s.shield) { s.shield = false; s.invincible = true; s.flashEffect = 1; audio.playShieldLost(); setTimeout(() => s.invincible = false, 1500); }
+                            else onGameOver(s.levelScore);
+                        }
+                    }
+                    
+                    for (let i = s.bullets.length - 1; i >= 0; i--) {
+                        const bullet = s.bullets[i]; bullet.y -= bullet.speed; if (bullet.vx) bullet.x += bullet.vx;
+                        let hit = false;
+                        for (const b of s.bosses) {
+                            if (b.isDying) continue;
+                            if (bullet.x < b.x + b.size && bullet.x + bullet.size > b.x && bullet.y < b.y + b.size && bullet.y + bullet.size > b.y) {
+                                b.health -= bullet.type === 'big' ? 5 : 1; b.hit = true; s.screenShake = bullet.type === 'big' ? 45 : 25; audio.playBossHit();
+                                if (bullet.type === 'split') { for (let j = 0; j < 3; j++) s.bullets.push({ x: bullet.x, y: bullet.y, size: 6, color: '#00ffaa', speed: 12, vx: (j - 1) * 4, vy: 2 }); }
+                                s.bullets.splice(i, 1); hit = true;
+                                if (b.health <= 0) { b.isDying = true; b.deathTimer = 180; if (s.isBlockRainActive) { s.isBlockRainActive = false; s.enemies = s.enemies.filter(e => !e.isStick); } }
+                                setTimeout(() => { if (b) b.hit = false }, 50); break;
+                            }
+                        }
+                        if (!hit && (bullet.y < -50 || bullet.y > height + 50)) s.bullets.splice(i, 1);
+                    }
+
+                    const spawnChance = trainingMode ? 0 : 0.08 + Math.min(0.42, currentLevel * 0.001);
+                    if (s.bosses.length === 0 && Math.random() < spawnChance && !s.isBlockRainActive) {
+                        const eSpeed = s.speed + Math.random() * Math.min(14, 6 + (currentLevel * 0.025));
+                        s.enemies.push({ x: Math.random() * (width - 30), y: -40, size: 28, speed: eSpeed, color: colors.secondary });
+                    }
+                    if (Math.random() < 0.015 && !s.isBlockRainActive) {
+                        let type = Math.random() > 0.85 ? 'shield' : (s.bosses.length > 0 ? 'shield' : 'point');
+                        const rand = Math.random();
+                        if (currentLevel >= 5 && rand < 0.2) type = 'dual'; else if (currentLevel >= 12 && rand < 0.35) type = 'rapid';
+                        else if (currentLevel >= 25 && rand < 0.5) type = 'split'; else if (currentLevel >= 40 && rand < 0.65) type = 'big';
+                        s.powerups.push({ x: Math.random() * (width - 25), y: -40, size: 28, type, color: '#fff' });
+                    }
+                    s.enemies.forEach((e, i) => {
+                        e.y += e.speed; if (e.vx) e.x += e.vx;
+                        const ex = e.x, ey = e.y, ew = e.isStick ? e.w : e.size, eh = e.isStick ? e.h : e.size;
+                        if (!s.invincible && s.player.x < ex + ew && s.player.x + s.player.size > ex && s.player.y < ey + eh && s.player.y + s.player.size > ey) {
+                            if (s.weaponType !== 'standard') { s.weaponType = 'standard'; s.weaponTimer = 0; s.invincible = true; s.flashEffect = 0.5; s.enemies.splice(i, 1); setTimeout(() => s.invincible = false, 1000); audio.playShieldLost(); return; }
+                            if (s.shield) { s.shield = false; s.invincible = true; s.flashEffect = 1; audio.playShieldLost(); s.enemies.splice(i, 1); setTimeout(() => s.invincible = false, 1500); }
+                            else onGameOver(s.levelScore);
+                        }
+                        if (e.y > height + 50 || e.x < -100 || e.x > width + 100) { s.enemies.splice(i, 1); if (s.bosses.length === 0 && !e.bossProjectile && !e.isStick) { s.levelScore++; onScoreUpdate(s.levelScore); } }
+                    });
+                    s.powerups.forEach((p, i) => {
+                        p.y += 6; if (s.player.x < p.x + p.size && s.player.x + s.player.size > p.x && s.player.y < p.y + p.size && s.player.y + p.size > p.y) {
+                            audio.playCollect(); if (p.type === 'shield') s.shield = true; else if (p.type === 'point') { s.levelScore += 25; onScoreUpdate(s.levelScore); }
+                            else { s.weaponType = p.type; s.weaponTimer = 450; } s.powerups.splice(i, 1);
+                        }
+                        if (p.y > height) s.powerups.splice(i, 1);
+                    });
+                }
+                s.trails.push({ x: s.player.x + s.player.size / 2, y: s.player.y + s.player.size / 2, size: s.player.size, color: s.player.color, life: 1 });
+                s.trails.forEach((t, i) => { t.life -= 0.15; if (t.life <= 0) s.trails.splice(i, 1); });
+                if (s.screenShake > 0) s.screenShake *= 0.92; if (s.flashEffect > 0) s.flashEffect -= 0.07;
+            };
+
+            const draw = (ctx) => {
+                const s = stateRef.current; const { width, height } = dimensionsRef.current; const colors = getThemeColors();
+                ctx.save(); if (s.screenShake > 0.1) ctx.translate(Math.random() * s.screenShake - s.screenShake / 2, Math.random() * s.screenShake - s.screenShake / 2);
+                ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = `hsla(${colors.bgHue}, 100%, 75%, 0.4)`; s.bgStars.forEach(star => ctx.fillRect(star.x, star.y, star.size, star.size));
+                ctx.strokeStyle = `hsla(${colors.bgHue}, 60%, 40%, 0.15)`; ctx.lineWidth = 2; ctx.beginPath();
+                for (let x = 0; x <= width; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+                for (let y = s.bgOffset; y <= height; y += 50) { ctx.moveTo(0, y); ctx.lineTo(width, y); } ctx.stroke();
+                s.trails.forEach(t => { ctx.fillStyle = `rgba(${s.shield ? '0,255,255' : colors.primary}, ${t.life * 0.4})`; ctx.beginPath(); ctx.arc(t.x, t.y, (t.size / 2) * t.life, 0, Math.PI * 2); ctx.fill(); });
+                s.bullets.forEach(b => { ctx.fillStyle = b.color || '#fff'; ctx.shadowBlur = b.type === 'big' ? 40 : 25; ctx.shadowColor = b.color || '#fff'; ctx.beginPath(); ctx.arc(b.x + b.size / 2, b.y + b.size / 2, b.size / 2, 0, Math.PI * 2); ctx.fill(); });
+                s.enemies.forEach(e => { ctx.fillStyle = e.color; ctx.shadowBlur = e.isStick ? 10 : 20; ctx.shadowColor = e.color; if (e.isStick) ctx.fillRect(e.x, e.y, e.w, e.h); else ctx.fillRect(e.x, e.y, e.size, e.size); });
+                s.powerups.forEach(p => {
+                    let pColor = '#fff'; switch (p.type) { case 'dual': pColor = '#ff00ff'; break; case 'rapid': pColor = '#00ffff'; break; case 'split': pColor = '#00ffaa'; break; case 'big': pColor = '#ffaa00'; break; case 'shield': pColor = '#0088ff'; break; case 'point': pColor = '#ffff00'; break; }
+                    ctx.fillStyle = pColor; ctx.shadowBlur = 30; ctx.shadowColor = pColor; ctx.beginPath(); ctx.arc(p.x + p.size / 2, p.y + p.size / 2, p.size / 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x + p.size / 2, p.y + p.size / 2, p.size / 4, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.shadowBlur = s.shield ? 40 : 25; ctx.shadowColor = s.weaponType !== 'standard' ? '#fff' : (s.shield ? '#00ffff' : colors.primary);
+                ctx.fillStyle = s.invincible ? `rgba(255,255,255,${Math.random()})` : (s.weaponType !== 'standard' ? '#fff' : (s.shield ? '#00ffff' : colors.primary));
+                drawPlayerArrow(ctx, s.player.x, s.player.y, s.player.size, s.weaponType === 'dual');
+                for (const b of s.bosses) {
+                    ctx.save(); if (b.isDying && Math.random() > 0.5) ctx.translate(Math.random() * 6 - 3, Math.random() * 6 - 3);
+                    const isFrozen = s.isBlockRainActive; const isAngry = b.health < b.maxHealth * 0.2;
+                    ctx.fillStyle = b.hit ? '#fff' : (isFrozen ? '#555' : (isAngry ? '#ff00ff' : b.color)); ctx.shadowBlur = isFrozen ? 10 : (isAngry ? 70 : 50); ctx.shadowColor = isFrozen ? '#ccc' : (isAngry ? '#ff00ff' : b.color);
+                    ctx.fillRect(b.x, b.y, b.size, b.size); drawBossFace(ctx, b, b.x, b.y, b.size);
+                    if (!b.isDying) { ctx.shadowBlur = 0; ctx.fillStyle = '#111'; ctx.fillRect(b.x, b.y - 35, b.size, 14); ctx.fillStyle = isFrozen ? '#888' : (isAngry ? '#ff00ff' : '#0f0'); ctx.fillRect(b.x, b.y - 35, (b.size / b.maxHealth) * b.health, 14); }
+                    else {
+                        const isLeft = b.x < width / 2; const bX = isLeft ? b.x - 190 : b.x + b.size + 10;
+                        ctx.save(); ctx.shadowBlur = 20; ctx.shadowColor = '#fff'; ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; ctx.fillRect(bX, b.y + 10, 180, 60);
+                        ctx.fillStyle = '#000'; ctx.font = 'bold 12px Orbitron'; ctx.textAlign = 'center'; ctx.fillText("Você estava se segurando,", bX + 90, b.y + 35); ctx.fillText("não é mesmo?..", bX + 90, b.y + 55); ctx.restore();
+                    } ctx.restore();
+                }
+                if (s.flashEffect > 0) { ctx.fillStyle = `rgba(255,255,255,${s.flashEffect})`; ctx.fillRect(0, 0, width, height); }
+                ctx.restore();
+                if ([GameState.PLAYING, GameState.BOSS_WARNING, GameState.COUNTDOWN].includes(gameState)) {
+                    ctx.fillStyle = '#fff'; ctx.font = '900 18px Orbitron'; ctx.textAlign = 'left'; ctx.fillText(`${t('phase', language)} ${currentLevel}`, 30, 45);
+                    if (s.weaponTimer > 0) { ctx.fillStyle = '#ff00ff'; ctx.fillRect(30, 60, (s.weaponTimer / 450) * 100, 4); }
+                    ctx.textAlign = 'right'; const ptBoss = Math.min(400, 60 + (currentLevel * 4));
+                    let progText = trainingMode ? 'MODO BOSS' : (s.bosses.length > 0 ? 'TARGETS ENGAGED' : `${s.levelScore}/${ptBoss}`);
+                    if (s.isBlockRainActive) progText = `RAIN: ${Math.ceil(s.blockRainTimer / 60)}s`;
+                    ctx.fillText(progText, width - 30, 45);
+                }
+            };
+
+            const drawBossFace = (ctx, b, x, y, size) => {
+                const s = stateRef.current; const eyeSize = size * 0.15; const eyeOff = size * 0.25;
+                const isP2 = b.health < b.maxHealth * 0.5; const isAngry = b.health < b.maxHealth * 0.2;
+                const isDying = b.isDying; const isFrozen = !isDying && s.isBlockRainActive;
+                ctx.fillStyle = isDying ? '#550000' : (isFrozen ? '#ccc' : (isAngry ? '#ff00ff' : (isP2 ? '#ff0000' : '#ffffff')));
+                ctx.shadowBlur = isDying ? 0 : (isFrozen ? 5 : (isAngry ? 25 : 15)); ctx.shadowColor = ctx.fillStyle;
+                ctx.beginPath(); if (isDying) { ctx.moveTo(x + eyeOff - eyeSize, y + size * 0.35 - eyeSize); ctx.lineTo(x + eyeOff + eyeSize, y + size * 0.35 + eyeSize); ctx.moveTo(x + eyeOff + eyeSize, y + size * 0.35 - eyeSize); ctx.lineTo(x + eyeOff - eyeSize, y + size * 0.35 + eyeSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
+                else { ctx.arc(x + eyeOff, y + size * 0.35, eyeSize, 0, Math.PI * 2); ctx.fill(); }
+                ctx.beginPath(); if (isDying) { ctx.moveTo(x + size - eyeOff - eyeSize, y + size * 0.35 - eyeSize); ctx.lineTo(x + size - eyeOff + eyeSize, y + size * 0.35 + eyeSize); ctx.moveTo(x + size - eyeOff + eyeSize, y + size * 0.35 - eyeSize); ctx.lineTo(x + size - eyeOff - eyeSize, y + size * 0.35 + eyeSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); }
+                else { ctx.arc(x + size - eyeOff, y + size * 0.35, eyeSize, 0, Math.PI * 2); ctx.fill(); }
+                ctx.strokeStyle = isDying ? '#fff' : ctx.fillStyle; ctx.lineWidth = 3; ctx.beginPath();
+                if (isDying) ctx.arc(x + size / 2, y + size * 0.7, size * 0.1, 0, Math.PI * 2);
+                else if (isAngry || isP2 || isFrozen) { ctx.moveTo(x + eyeOff, y + size * 0.7); ctx.lineTo(x + size / 2, y + size * 0.85); ctx.lineTo(x + size - eyeOff, y + size * 0.7); }
+                else ctx.arc(x + size / 2, y + size * 0.55, size * 0.25, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke(); ctx.shadowBlur = 0;
+            };
+
+            const drawPlayerArrow = (ctx, x, y, size, isDual) => {
+                ctx.beginPath(); if (isDual) { ctx.moveTo(x + size / 4, y); ctx.lineTo(x - size / 4, y + size); ctx.lineTo(x + size / 4, y + size * 0.8); ctx.lineTo(x + size / 2, y + size); ctx.lineTo(x + size / 2, y); ctx.moveTo(x + size / 2, y); ctx.lineTo(x + size * 0.5, y + size); ctx.lineTo(x + size * 0.75, y + size * 0.8); ctx.lineTo(x + size * 1.25, y + size); ctx.lineTo(x + size * 0.75, y); }
+                else { ctx.moveTo(x + size / 2, y); ctx.lineTo(x, y + size); ctx.lineTo(x + size / 2, y + size * 0.75); ctx.lineTo(x + size, y + size); } ctx.closePath(); ctx.fill(); ctx.lineWidth = 2; ctx.stroke();
+            };
+
+            useEffect(() => {
+                const canvas = canvasRef.current; const ctx = canvas.getContext('2d');
+                const updateSize = () => { const rect = canvas.getBoundingClientRect(); canvas.width = rect.width; canvas.height = rect.height; dimensionsRef.current = { width: rect.width, height: rect.height }; initStars(rect.width, rect.height); };
+                updateSize(); window.addEventListener('resize', updateSize);
+                let raf; const loop = () => { update(); draw(ctx); raf = requestAnimationFrame(loop); };
+                raf = requestAnimationFrame(loop); return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', updateSize); };
+            }, [gameState, theme, currentLevel, language, trainingMode]);
+
+            return <canvas ref={canvasRef} className="bg-black block w-full h-full touch-none" />;
+        };
+
+        const App = () => {
+            const [gameState, setGameState] = useState(GameState.INTRO);
+            const [saveData, setSaveData] = useState(SaveService.load());
+            const [countdown, setCountdown] = useState(3);
+            const [currentLevel, setCurrentLevel] = useState(1);
+            const [levelScore, setLevelScore] = useState(0);
+            const [pendingLevel, setPendingLevel] = useState(null);
+            const [isTraining, setIsTraining] = useState(false);
+            const [bgOffset, setBgOffset] = useState(0);
+
+            useEffect(() => {
+                const interval = setInterval(() => setBgOffset(prev => (prev + 1) % 40), 50);
+                if (gameState === GameState.INTRO) { setTimeout(() => setGameState(GameState.MENU), 4000); }
+                return () => clearInterval(interval);
+            }, [gameState]);
+
+            const handleStartLevel = useCallback((level, training = false) => {
+                setIsTraining(training);
+                if (!saveData.tutorialSeen) { setPendingLevel(level); setGameState(GameState.TUTORIAL); return; }
+                setCurrentLevel(level); setLevelScore(0); setGameState(GameState.COUNTDOWN);
+                let count = 3; setCountdown(count); audio.playCountdown(count);
+                const interval = setInterval(() => { count--; setCountdown(count); if (count >= 0) audio.playCountdown(count);
+                    if (count < 0) { clearInterval(interval); setGameState(GameState.PLAYING); audio.playStart(); }
+                }, 1000);
+            }, [saveData.tutorialSeen]);
+
+            const handleLevelComplete = useCallback((level) => {
+                if (isTraining) { setGameState(GameState.VICTORY); audio.playStart(); return; }
+                const nextLevel = level + 1; const newMax = Math.max(saveData.maxLevel, nextLevel);
+                SaveService.save({ maxLevel: newMax }); setSaveData(prev => ({ ...prev, maxLevel: newMax }));
+                setGameState(GameState.VICTORY); audio.playStart();
+            }, [saveData.maxLevel, isTraining]);
+
+            const handleGameOver = useCallback((finalScore) => {
+                const newHighScore = Math.max(saveData.highScore, finalScore);
+                SaveService.save({ highScore: newHighScore }); setSaveData(prev => ({ ...prev, highScore: newHighScore }));
+                setGameState(GameState.GAME_OVER); audio.playExplosion();
+            }, [saveData.highScore]);
+
+            const changeTheme = (theme) => { SaveService.save({ theme }); setSaveData(prev => ({ ...prev, theme })); audio.playCollect(); };
+            const setLang = (l) => { SaveService.save({ language: l }); setSaveData(prev => ({ ...prev, language: l })); audio.playCollect(); };
+            const getSkinColor = (theme) => { switch (theme) { case 'supernova': return '#f97316'; case 'abismo': return '#22c55e'; case 'vortex': return '#ec4899'; case 'estelar': return '#eab308'; default: return '#06b6d4'; } };
+
+            return (
+                <div className="relative w-screen h-screen bg-[#020202] flex items-center justify-center overflow-hidden select-none touch-none font-['Orbitron']">
+                    <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: `linear-gradient(rgba(0,212,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.1) 1px, transparent 1px)`, backgroundSize: '50px 50px', transform: `translateY(${bgOffset}px)` }} />
+                    <div className="relative border-y-2 border-white/20 shadow-[0_0_120px_rgba(0,0,0,1)] bg-black w-full h-[85vh] transition-all overflow-hidden">
+                        <GameCanvas gameState={gameState} currentLevel={currentLevel} theme={saveData.theme} language={saveData.language} trainingMode={isTraining} onGameOver={handleGameOver} onScoreUpdate={setLevelScore} onLevelComplete={handleLevelComplete} onBossWarning={() => setGameState(GameState.BOSS_WARNING)} onBossSpawned={() => setGameState(GameState.PLAYING)} onBossEncountered={(lv) => { if (lv > saveData.maxBossUnlocked) { SaveService.save({ maxBossUnlocked: lv }); setSaveData(p => ({...p, maxBossUnlocked: lv})); } }} />
+
+                        {gameState === GameState.INTRO && (
+                            <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center text-center animate-in fade-in duration-[1000ms]">
+                                <div className="relative mb-4">
+                                    <h1 className="text-5xl font-black text-cyan-400 italic tracking-tighter animate-pulse">NEON DASH</h1>
+                                    <div className="absolute -inset-1 bg-cyan-400/20 blur-xl animate-pulse" />
+                                </div>
+                                <p className="text-gray-500 text-[10px] tracking-[0.4em] uppercase font-bold">{t('createdBy', saveData.language)}</p>
+                            </div>
+                        )}
+
+                        {gameState === GameState.MENU && (
+                            <div className="absolute inset-0 z-50 bg-black/70 flex flex-col items-center justify-center p-8 text-center backdrop-blur-[6px] animate-in fade-in duration-500 overflow-y-auto custom-scrollbar">
+                                <div className="mb-10 relative group shrink-0">
+                                    <h1 className="text-7xl font-black text-cyan-400 italic tracking-tighter">NEON</h1>
+                                    <h1 className="text-7xl font-black text-white italic tracking-tighter -mt-4">DASH</h1>
+                                    <div className="absolute -top-6 -right-6 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold animate-pulse">ULTIMATE</div>
+                                </div>
+                                <div className="w-full max-w-md flex flex-col gap-3">
+                                    <button onClick={() => setGameState(GameState.LEVEL_SELECT)} className="w-full py-5 bg-cyan-500 text-black font-black text-xl rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.4)] active:scale-95 transition-all">{t('play', saveData.language)}</button>
+                                    <button onClick={() => setGameState(GameState.BOSS_TRAINING_SELECT)} className="w-full py-4 border-2 border-red-500/50 text-red-400 font-black text-lg rounded-2xl bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.2)]">{t('bossMode', saveData.language)}</button>
+                                    <button onClick={() => setGameState(GameState.SKINS)} className="w-full py-3 border-2 border-cyan-500/50 text-cyan-400 font-bold rounded-xl bg-cyan-500/10">{t('skins', saveData.language)}</button>
+                                    <button onClick={() => setGameState(GameState.SETTINGS)} className="w-full py-3 border-2 border-white/20 text-white font-bold rounded-xl bg-white/5">{t('settings', saveData.language)}</button>
+                                    <div className="grid grid-cols-2 gap-4 w-full text-[10px] uppercase tracking-widest mt-4 shrink-0">
+                                        <div className="bg-white/5 p-4 rounded-2xl border border-white/10 shadow-inner"><p className="text-gray-500">{t('record', saveData.language)}</p><p className="text-yellow-500 font-bold text-xl">{saveData.highScore}</p></div>
+                                        <div className="bg-white/5 p-4 rounded-2xl border border-white/10 shadow-inner"><p className="text-gray-500">{t('maxLevel', saveData.language)}</p><p className="text-white font-bold text-xl">{saveData.maxLevel}</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.SETTINGS && (
+                            <div className="absolute inset-0 z-50 bg-black/95 flex flex-col p-6 animate-in slide-in-from-bottom duration-300 backdrop-blur-2xl">
+                                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4 shrink-0">
+                                    <h2 className="text-xl font-black text-white italic">{t('settings', saveData.language)}</h2>
+                                    <button onClick={() => setGameState(GameState.MENU)} className="text-white text-[10px] bg-white/10 px-5 py-2 rounded-full font-black uppercase tracking-widest">{t('back', saveData.language)}</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2 pb-6 max-w-lg mx-auto w-full">
+                                    <button onClick={() => { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }} className="w-full py-5 bg-white/10 border-2 border-white/20 text-white font-black text-sm rounded-2xl">{t('fullScreen', saveData.language)}</button>
+                                    <div className="space-y-4">
+                                        <p className="text-[11px] text-gray-500 font-black uppercase tracking-widest">{t('language', saveData.language)}</p>
+                                        {['pt_BR', 'en_US', 'es_ES'].map(l => (
+                                            <button key={l} onClick={() => setLang(l)} className={`w-full py-4 px-6 rounded-2xl border-2 text-left font-black transition-all ${saveData.language === l ? 'border-cyan-400 bg-cyan-400/10 text-white' : 'border-white/5 bg-white/5 text-gray-600'}`}>{l.replace('_', ' ')}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.LEVEL_SELECT && (
+                            <div className="absolute inset-0 z-50 bg-black flex flex-col p-6 animate-in slide-in-from-right duration-300">
+                                <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                                    <h2 className="text-xl font-black text-cyan-400 italic">{t('missions', saveData.language)}</h2>
+                                    <button onClick={() => setGameState(GameState.MENU)} className="text-white text-[10px] bg-white/10 px-4 py-2 rounded-full font-black uppercase">{t('back', saveData.language)}</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto grid grid-cols-5 md:grid-cols-10 gap-3 pb-8 pr-2 custom-scrollbar">
+                                    {Array.from({ length: 1000 }, (_, i) => i + 1).map(lv => (
+                                        <button key={lv} disabled={lv > saveData.maxLevel} onClick={() => handleStartLevel(lv)} className={`aspect-square flex items-center justify-center font-black text-[10px] rounded-lg transition-all border ${lv <= saveData.maxLevel ? (lv % 10 === 0 ? 'bg-red-500/20 text-red-400 border-red-500/50' : 'bg-cyan-500/10 text-cyan-400 border-cyan-400/30 active:scale-90') : 'bg-gray-900 text-gray-800 opacity-30 border-white/5'}`}>{lv}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.BOSS_TRAINING_SELECT && (
+                            <div className="absolute inset-0 z-50 bg-black flex flex-col p-6 animate-in slide-in-from-right duration-300">
+                                <div className="flex justify-between items-center mb-6 border-b border-red-500/20 pb-4">
+                                    <h2 className="text-xl font-black text-red-500 italic">{t('bossTraining', saveData.language)}</h2>
+                                    <button onClick={() => setGameState(GameState.MENU)} className="text-white text-[10px] bg-white/10 px-4 py-2 rounded-full font-black uppercase">{t('back', saveData.language)}</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto grid grid-cols-5 md:grid-cols-10 gap-3 pb-8 pr-2 custom-scrollbar">
+                                    {Array.from({ length: 1000 }, (_, i) => i + 1).map(lv => (
+                                        <button key={lv} disabled={lv > saveData.maxBossUnlocked} onClick={() => handleStartLevel(lv, true)} className={`aspect-square flex items-center justify-center font-black text-[10px] rounded-lg transition-all border ${lv <= saveData.maxBossUnlocked ? 'bg-red-500/20 text-red-500 border-red-500/40 active:scale-90' : 'bg-gray-900 text-gray-800 opacity-20 border-white/5'}`}>{lv}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.SKINS && (
+                            <div className="absolute inset-0 z-50 bg-black/95 flex flex-col p-6 animate-in slide-in-from-bottom duration-300 backdrop-blur-xl">
+                                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                                    <h2 className="text-xl font-black text-cyan-400 italic">{t('garage', saveData.language)}</h2>
+                                    <button onClick={() => setGameState(GameState.MENU)} className="text-white text-[10px] bg-white/10 px-5 py-2 rounded-full font-black uppercase">{t('close', saveData.language)}</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar max-w-lg mx-auto w-full">
+                                    {['nebulosa', 'supernova', 'abismo', 'vortex', 'estelar'].map(s => (
+                                        <button key={s} onClick={() => changeTheme(s)} className={`w-full flex items-center p-6 rounded-3xl border-2 transition-all ${saveData.theme === s ? 'border-cyan-400 bg-cyan-400/20' : 'border-white/5 bg-white/5'}`}>
+                                            <div className="w-14 h-14 rounded-full border-4 border-white/20 animate-pulse" style={{ backgroundColor: getSkinColor(s), boxShadow: `0 0 25px ${getSkinColor(s)}` }} />
+                                            <div className="flex-1 text-left ml-6"><p className={`font-black text-lg ${saveData.theme === s ? 'text-white' : 'text-gray-400'}`}>{s.toUpperCase()}</p><p className="text-[10px] text-gray-600">NEURAL CORE ACTIVE</p></div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.GAME_OVER && (
+                            <div className="absolute inset-0 z-50 bg-red-950/90 flex flex-col items-center justify-center p-8 text-center backdrop-blur-lg animate-in fade-in duration-500">
+                                <h2 className="text-6xl font-black text-white italic drop-shadow-[0_0_30px_red] uppercase mb-2">{t('gameOver', saveData.language)}</h2>
+                                <p className="text-red-400 text-[10px] uppercase font-black">{t('systemCorrupted', saveData.language)}</p>
+                                <div className="mt-16 flex flex-col gap-4 w-full max-w-[320px]">
+                                    <button onClick={() => handleStartLevel(currentLevel, isTraining)} className="py-6 bg-white text-red-950 font-black rounded-2xl text-xl">{t('retry', saveData.language)}</button>
+                                    <button onClick={() => setGameState(isTraining ? GameState.BOSS_TRAINING_SELECT : GameState.MENU)} className="py-4 border-2 border-white/20 text-white font-black rounded-2xl bg-white/5 uppercase text-xs">{t('mainMenu', saveData.language)}</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.VICTORY && (
+                            <div className="absolute inset-0 z-50 bg-cyan-950/90 flex flex-col items-center justify-center p-8 backdrop-blur-xl animate-in zoom-in duration-400">
+                                <h2 className="text-7xl font-black text-white italic drop-shadow-[0_0_40px_cyan] uppercase mb-2">{t('victory', saveData.language)}</h2>
+                                <p className="text-cyan-400 font-black text-sm uppercase">{t('sectorRestored', saveData.language) + ' ' + currentLevel}</p>
+                                <div className="mt-16 w-full flex flex-col gap-4 max-w-[320px]">
+                                    {!isTraining ? <button onClick={() => handleStartLevel(currentLevel + 1)} className="py-6 bg-cyan-400 text-cyan-950 font-black rounded-3xl text-2xl">{t('nextMission', saveData.language)}</button>
+                                    : <button onClick={() => setGameState(GameState.BOSS_TRAINING_SELECT)} className="py-6 bg-red-600 text-white font-black rounded-3xl text-2xl uppercase">{t('back', saveData.language)}</button>}
+                                    <button onClick={() => setGameState(GameState.MENU)} className="py-4 border-2 border-white/20 text-white font-black rounded-2xl bg-white/5 uppercase text-xs">{t('mainMenu', saveData.language)}</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {gameState === GameState.COUNTDOWN && <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"><span className="text-[180px] font-black text-white italic animate-ping opacity-80">{countdown > 0 ? countdown : '!'}</span></div>}
+                        {gameState === GameState.BOSS_WARNING && <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"><div className="bg-red-600/90 w-full py-10 -skew-y-2 shadow-[0_0_80px_red] flex items-center justify-center border-y-4 border-white animate-in zoom-in"><h2 className="text-6xl font-black italic text-white animate-pulse">{t('bossDetected', saveData.language)}</h2></div></div>}
+                        
+                        {gameState === GameState.TUTORIAL && (
+                            <div className="absolute inset-0 z-[110] bg-black/90 flex flex-col items-center justify-center p-8 text-center backdrop-blur-xl animate-in zoom-in duration-500">
+                                <div className="w-full max-w-xs border-2 border-cyan-500/30 rounded-3xl p-8 bg-white/5 shadow-[0_0_40px_rgba(6,182,212,0.2)]">
+                                    <h2 className="text-2xl font-black text-cyan-400 mb-6 italic">{t('tutorialTitle', saveData.language)}</h2>
+                                    <p className="text-white/80 text-sm leading-relaxed mb-10">{t('tutorialBody', saveData.language)}</p>
+                                    <button onClick={() => { SaveService.save({ tutorialSeen: true }); setSaveData(p => ({...p, tutorialSeen: true})); if (pendingLevel) handleStartLevel(pendingLevel, isTraining); else setGameState(GameState.MENU); }} className="w-full py-4 bg-cyan-50 text-black font-black text-lg rounded-2xl">{t('continue', saveData.language)}</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
